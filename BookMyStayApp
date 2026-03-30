@@ -1,8 +1,10 @@
 /**
  * HotelBookingApp is the entry point for the Hotel Booking System application.
  * This class demonstrates how a Java program begins execution and produces console output.
+ * It now also introduces object modeling using abstraction and inheritance for rooms.
  *
- * It prints a welcome message along with the application name and version.
+ * It prints a welcome message along with the application name and version,
+ * and displays predefined room types with their availability.
  *
  * @author User
  * @version 1.0
@@ -13,14 +15,117 @@ public class HotelBookingApp {
      * The main method is the entry point of the application.
      * The Java Virtual Machine (JVM) calls this method to start the program.
      *
-     * @param args command-line arguments (not used in this simple example)
+     * @param args command-line arguments (not used in this example)
      */
     public static void main(String[] args) {
-        // Print a welcome message to the console
+        // Print welcome message
         System.out.println("Welcome to the Hotel Booking System!");
         System.out.println("Application Name: Hotel Booking System");
-        System.out.println("Version: 1.0");
+        System.out.println("Version: 1.0\n");
 
-        // Program terminates automatically after main() completes
+        // Initialize room objects
+        Room singleRoom = new SingleRoom(1, 20, 50.0);
+        Room doubleRoom = new DoubleRoom(2, 35, 90.0);
+        Room suiteRoom  = new SuiteRoom(3, 60, 200.0);
+
+        // Store availability using simple variables
+        int singleRoomAvailable = 5;
+        int doubleRoomAvailable = 3;
+        int suiteRoomAvailable  = 2;
+
+        // Display room details and availability
+        displayRoomInfo(singleRoom, singleRoomAvailable);
+        displayRoomInfo(doubleRoom, doubleRoomAvailable);
+        displayRoomInfo(suiteRoom, suiteRoomAvailable);
+    }
+
+    /**
+     * Utility method to display details of a room along with its availability.
+     *
+     * @param room Room object
+     * @param available number of available rooms
+     */
+    private static void displayRoomInfo(Room room, int available) {
+        System.out.println(room.getRoomType() + ":");
+        System.out.println("  Beds: " + room.getBeds());
+        System.out.println("  Size: " + room.getSize() + " sqm");
+        System.out.println("  Price per night: $" + room.getPrice());
+        System.out.println("  Available: " + available + "\n");
+    }
+}
+
+/**
+ * Abstract class representing a generalized Room.
+ * Cannot be instantiated directly.
+ */
+abstract class Room {
+    private int beds;
+    private int size; // in square meters
+    private double price; // per night
+
+    public Room(int beds, int size, double price) {
+        this.beds = beds;
+        this.size = size;
+        this.price = price;
+    }
+
+    public int getBeds() {
+        return beds;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    /**
+     * Abstract method to get the type of the room.
+     * Must be implemented by concrete subclasses.
+     */
+    public abstract String getRoomType();
+}
+
+/**
+ * Concrete class representing a single room.
+ */
+class SingleRoom extends Room {
+    public SingleRoom(int beds, int size, double price) {
+        super(beds, size, price);
+    }
+
+    @Override
+    public String getRoomType() {
+        return "Single Room";
+    }
+}
+
+/**
+ * Concrete class representing a double room.
+ */
+class DoubleRoom extends Room {
+    public DoubleRoom(int beds, int size, double price) {
+        super(beds, size, price);
+    }
+
+    @Override
+    public String getRoomType() {
+        return "Double Room";
+    }
+}
+
+/**
+ * Concrete class representing a suite room.
+ */
+class SuiteRoom extends Room {
+    public SuiteRoom(int beds, int size, double price) {
+        super(beds, size, price);
+    }
+
+    @Override
+    public String getRoomType() {
+        return "Suite Room";
     }
 }
