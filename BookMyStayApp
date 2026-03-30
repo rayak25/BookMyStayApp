@@ -1,0 +1,26 @@
+/**
+ * HotelBookingApp is the entry point for the Hotel Booking System application.
+ * This class demonstrates how a Java program begins execution and produces console output.
+ *
+ * It prints a welcome message along with the application name and version.
+ *
+ * @author User
+ * @version 1.0
+ */
+public class HotelBookingApp {
+
+    /**
+     * The main method is the entry point of the application.
+     * The Java Virtual Machine (JVM) calls this method to start the program.
+     *
+     * @param args command-line arguments (not used in this simple example)
+     */
+    public static void main(String[] args) {
+        // Print a welcome message to the console
+        System.out.println("Welcome to the Hotel Booking System!");
+        System.out.println("Application Name: Hotel Booking System");
+        System.out.println("Version: 1.0");
+
+        // Program terminates automatically after main() completes
+    }
+}
