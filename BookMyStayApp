@@ -1,18 +1,19 @@
 /**
- * HotelBookingApp is the entry point for the Hotel Booking System application.
- * This version introduces centralized inventory management using HashMap.
- * It demonstrates object modeling (abstraction and inheritance) and
- * single-source-of-truth availability tracking.
+ * HotelBookingApp demonstrates object modeling, centralized inventory, and now
+ * introduces a read-only SearchService to allow guests to view available rooms
+ * without modifying system state.
  *
  * Author: User
  * Version: 1.0
  */
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class HotelBookingApp {
 
     public static void main(String[] args) {
-        // Print welcome message
+        // Welcome message
         System.out.println("Welcome to the Hotel Booking System!");
         System.out.println("Application Name: Hotel Booking System");
         System.out.println("Version: 1.0\n");
@@ -25,39 +26,60 @@ public class HotelBookingApp {
         // Initialize centralized inventory
         RoomInventory inventory = new RoomInventory();
         inventory.registerRoom(singleRoom, 5);
-        inventory.registerRoom(doubleRoom, 3);
+        inventory.registerRoom(doubleRoom, 0); // intentionally zero to test filtering
         inventory.registerRoom(suiteRoom, 2);
 
-        // Display current inventory
-        displayRoomInfo(singleRoom, inventory);
-        displayRoomInfo(doubleRoom, inventory);
-        displayRoomInfo(suiteRoom, inventory);
+        // Search service for guests
+        SearchService searchService = new SearchService(inventory);
 
-        // Example of updating inventory
-        inventory.bookRoom(singleRoom.getRoomType());
-        System.out.println("After booking 1 Single Room:\n");
-        displayRoomInfo(singleRoom, inventory);
-    }
+        // Perform a read-only search for available rooms
+        List<Room> availableRooms = searchService.searchAvailableRooms(List.of(singleRoom, doubleRoom, suiteRoom));
 
-    /**
-     * Utility method to display room details and current availability.
-     *
-     * @param room Room object
-     * @param inventory RoomInventory object managing availability
-     */
-    private static void displayRoomInfo(Room room, RoomInventory inventory) {
-        System.out.println(room.getRoomType() + ":");
-        System.out.println("  Beds: " + room.getBeds());
-        System.out.println("  Size: " + room.getSize() + " sqm");
-        System.out.println("  Price per night: $" + room.getPrice());
-        System.out.println("  Available: " + inventory.getAvailability(room.getRoomType()) + "\n");
+        // Display search results
+        System.out.println("Available Rooms for Guests:\n");
+        for (Room room : availableRooms) {
+            System.out.println(room.getRoomType() + ":");
+            System.out.println("  Beds: " + room.getBeds());
+            System.out.println("  Size: " + room.getSize() + " sqm");
+            System.out.println("  Price per night: $" + room.getPrice());
+            System.out.println("  Available: " + inventory.getAvailability(room.getRoomType()) + "\n");
+        }
+
+        // Note: Inventory remains unchanged; no bookings performed
     }
 }
 
 /**
- * Abstract class representing a generalized Room.
- * Cannot be instantiated directly.
+ * Read-only service that allows guests to search for available rooms.
+ * Does not modify inventory state.
  */
+class SearchService {
+    private final RoomInventory inventory;
+
+    public SearchService(RoomInventory inventory) {
+        this.inventory = inventory;
+    }
+
+    /**
+     * Returns a list of rooms that have availability greater than zero.
+     *
+     * @param rooms list of all possible room objects
+     * @return list of rooms with availability
+     */
+    public List<Room> searchAvailableRooms(List<Room> rooms) {
+        List<Room> result = new ArrayList<>();
+        for (Room room : rooms) {
+            int available = inventory.getAvailability(room.getRoomType());
+            if (available > 0) {
+                result.add(room);
+            }
+        }
+        return result;
+    }
+}
+
+// ---------- Existing domain model and inventory classes ----------
+
 abstract class Room {
     private int beds;
     private int size; // in square meters
@@ -69,18 +91,9 @@ abstract class Room {
         this.price = price;
     }
 
-    public int getBeds() {
-        return beds;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
+    public int getBeds() { return beds; }
+    public int getSize() { return size; }
+    public double getPrice() { return price; }
     public abstract String getRoomType();
 }
 
@@ -99,43 +112,19 @@ class SuiteRoom extends Room {
     @Override public String getRoomType() { return "Suite Room"; }
 }
 
-/**
- * RoomInventory manages availability of all room types in a centralized manner.
- * Uses a HashMap to map room type names to their available counts.
- */
 class RoomInventory {
     private HashMap<String, Integer> availabilityMap;
 
-    public RoomInventory() {
-        availabilityMap = new HashMap<>();
-    }
+    public RoomInventory() { availabilityMap = new HashMap<>(); }
 
-    /**
-     * Registers a room type with its initial availability.
-     *
-     * @param room Room object
-     * @param count initial available rooms
-     */
     public void registerRoom(Room room, int count) {
         availabilityMap.put(room.getRoomType(), count);
     }
 
-    /**
-     * Retrieves the current availability for a given room type.
-     *
-     * @param roomType type of room
-     * @return available count, or 0 if not registered
-     */
     public int getAvailability(String roomType) {
         return availabilityMap.getOrDefault(roomType, 0);
     }
 
-    /**
-     * Books one room of the given type, reducing availability by 1.
-     *
-     * @param roomType type of room to book
-     * @return true if booking succeeded, false if none available
-     */
     public boolean bookRoom(String roomType) {
         int available = availabilityMap.getOrDefault(roomType, 0);
         if (available > 0) {
@@ -147,12 +136,6 @@ class RoomInventory {
         }
     }
 
-    /**
-     * Adds more rooms of a specific type to the inventory.
-     *
-     * @param roomType type of room
-     * @param count number of rooms to add
-     */
     public void addRooms(String roomType, int count) {
         int available = availabilityMap.getOrDefault(roomType, 0);
         availabilityMap.put(roomType, available + count);
